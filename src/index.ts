@@ -39,7 +39,7 @@ const fileBrowserPlugin: JupyterLabPlugin<void> = {
 function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory: IFileBrowserFactory, restorer: ILayoutRestorer): void {
   const { commands } = app;
 
-  console.log("ACtivated@@");
+  console.log("ACtivated@@.001");
 
   // Add the Google Drive backend to the contents manager.
   const drive = new IrodsDrive(app.docRegistry);
@@ -55,7 +55,7 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
   irodsBrowser.title.iconClass = 'jp-GithHub-tablogo';
   irodsBrowser.title.label = "Irods";
 
-  irodsBrowser.id = 'irods-file-browserirodsBrowser'
+  irodsBrowser.id = 'irods-file-browser';
   // manager.services.contents
 
   // Add the file browser widget to the application restorer.

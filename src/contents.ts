@@ -12,7 +12,11 @@ import {
 
 import {
     DocumentRegistry
-  } from '@jupyterlab/docregistry';
+} from '@jupyterlab/docregistry';
+
+import {
+    ObservableValue
+} from '@jupyterlab/observables';
 
 /**
 * Make a request to the notebook server proxy for the
@@ -46,6 +50,8 @@ export class IrodsDrive implements Contents.IDrive {
     serverSettings: ServerConnection.ISettings;
     //private _serverSettings: ServerConnection.ISettings;
     //private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
+    readonly rateLimitedState: ObservableValue;
+
 
     constructor(registry: DocumentRegistry) {
         //this._serverSettings = ServerConnection.makeSettings();
@@ -55,6 +61,8 @@ export class IrodsDrive implements Contents.IDrive {
         //         registry.getFileType('text')! :
         //         types[0];
         // };
+        this.rateLimitedState = new ObservableValue(false);
+
     }
 
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
@@ -89,7 +97,7 @@ export class IrodsDrive implements Contents.IDrive {
         return Promise.reject('Irods is CURRENTLY read only');
     }
     listCheckpoints(localPath: string): Promise<Contents.ICheckpointModel[]> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.resolve([]);
     }
     restoreCheckpoint(localPath: string, checkpointID: string): Promise<void> {
         return Promise.reject('Irods is CURRENTLY read only');
