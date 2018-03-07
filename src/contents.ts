@@ -29,33 +29,33 @@ import {
 *
 * @returns a Promise resolved with the JSON response.
 */
-export
-    function irodRequest<T>(url: string): Promise<T> {
-    const fullURL = URLExt.join(this._serverSettings.baseUrl, 'irods', url);
-    return ServerConnection.makeRequest(fullURL, {}, this._serverSettings).then(response => {
-        if (response.status !== 200) {
-            return response.json().then(data => {
-                throw new ServerConnection.ResponseError(response, data.message);
-            });
-        }
-        return response.json();
-    });
-}
+
+
+
+
+
+
 
 
 
 
 export class IrodsDrive implements Contents.IDrive {
-    name: string;
-    serverSettings: ServerConnection.ISettings;
-    //private _serverSettings: ServerConnection.ISettings;
+    private _serverSettings: ServerConnection.ISettings;
     //private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
-    readonly rateLimitedState: ObservableValue;
+
+    private _validUser = true;
+    private _isDisposed = false;
+    // private _serverSettings: ServerConnection.ISettings;
+    // private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
+
+
+
+
 
 
     constructor(registry: DocumentRegistry) {
-        //this._serverSettings = ServerConnection.makeSettings();
-        //this._fileTypeForPath = (path: string) => {
+        this._serverSettings = ServerConnection.makeSettings();
+        // this._fileTypeForPath = (path: string) => {
         //     const types = registry.getFileTypesForPath(path);
         //     return types.length === 0 ?
         //         registry.getFileType('text')! :
@@ -65,15 +65,72 @@ export class IrodsDrive implements Contents.IDrive {
 
     }
 
+
+
+    /**
+     * The name of the drive.
+     */
+    get name(): 'Irods' {
+        return 'Irods';
+    }
+
+    /**
+   * State for whether the user is valid.
+   */
+    get validUser(): boolean {
+        return this._validUser;
+    }
+
+    /**
+     * Settings for the notebook server.
+     */
+    readonly serverSettings: ServerConnection.ISettings;
+
+    /**
+     * State for whether the drive is being rate limited by GitHub.
+     */
+    readonly rateLimitedState: ObservableValue;
+
+    /**
+     * A signal emitted when a file operation takes place.
+     */
+    get fileChanged(): ISignal<this, Contents.IChangedArgs> {
+        return this._fileChanged;
+    }
+
+    /**
+     * Test whether the manager has been disposed.
+     */
+    get isDisposed(): boolean {
+        return this._isDisposed;
+    }
+
+    /**h
+     * Dispose of the resources held by the manager.
+     */
+    dispose(): void {
+        if (this.isDisposed) {
+            return;
+        }
+        this._isDisposed = true;
+        Signal.clearData(this);
+    }
+
+    /**
+     * Get the base url of the manager.
+     */
+    get baseURL(): string {
+        return 'https://api.github.com';
+    }
+
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
 
 
-        irodRequest<Contents.IModel>(localPath).then(contents => {
+        return this.IrodsRequest<Contents.IModel>(localPath).then(contents => {
             console.log("Trying to do Irods stuff")
             return contents
         });
 
-        return null;
     }
     getDownloadUrl(localPath: string): Promise<string> {
         return Promise.reject('Irods is CURRENTLY read only');
@@ -105,14 +162,20 @@ export class IrodsDrive implements Contents.IDrive {
     deleteCheckpoint(localPath: string, checkpointID: string): Promise<void> {
         return Promise.reject('Irods is CURRENTLY read only');
     }
-    isDisposed: boolean;
-    dispose(): void {
-        throw new Error("Method not implemented.");
+
+    private IrodsRequest<T>(url: string): Promise<T> {
+        const fullURL = URLExt.join(this._serverSettings.baseUrl, 'irods', url);
+        return ServerConnection.makeRequest(fullURL, {}, this._serverSettings).then(response => {
+            if (response.status !== 200) {
+                return response.json().then(data => {
+                    throw new ServerConnection.ResponseError(response, data.message);
+                });
+            }
+            return response.json();
+        });
     }
 
-    get fileChanged(): ISignal<this, Contents.IChangedArgs> {
-        return this._fileChanged;
-    }
+
 
     private _fileChanged = new Signal<this, Contents.IChangedArgs>(this);
 
