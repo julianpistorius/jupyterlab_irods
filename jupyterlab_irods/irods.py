@@ -20,12 +20,11 @@ class Irods:
     Parent class for helper IROD commands
     """
 
-    def ils(self, current_path):
+    def get(self, current_path):
         """
         Used to get contents of current directory
         """
         try:
-            print(current_path)
             coll = session.collections.get(current_path)
 
             folders = coll.subcollections
@@ -70,5 +69,45 @@ class Irods:
           
 
             return result
-        except:
-            return { "results": "FAILURE"}
+        except:            
+
+            # try:
+
+            print ("testing 123")
+            print (current_path)
+            obj = session.data_objects.get(current_path)
+            print (obj)
+
+            print ("failure")
+            file_string = ""
+            with obj.open('r+') as f:
+                f.seek(0,0)
+                for line in f:
+                    file_string = file_string + str(line.decode('ascii'))
+            
+            return {
+
+                "name": obj.name,
+                "path": obj.name,
+                "last_modified": "2018-03-05T17:02:11.246961Z",
+                "created":"2018-03-05T17:02:11.246961Z",
+                "content": file_string,
+                "format": "text",
+                "mimetpye":"text/*",
+                "writable":True,
+                "type":"file"
+            }
+
+            # except:
+            #     return {
+
+            #         "name": "folder_name",
+            #         "path": "folder_path",
+            #         "last_modified": "2018-03-05T17:02:11.246961Z",
+            #         "created":"2018-03-05T17:02:11.246961Z",
+            #         "content":"",
+            #         "format": "json",
+            #         "mimetpye":None,
+            #         "writable":True,
+            #         "type":"fole"
+            #     }

@@ -15,7 +15,7 @@ irods = Irods()
 class IrodHandler(APIHandler):
     @gen.coroutine
     def get(self, path = ''):
-        self.finish(json.dumps(irods.ils("/iplant/home/toddwickizer/test_data")))
+        self.finish(json.dumps(irods.get(path)))
 
 
 def _jupyter_server_extension_paths():
