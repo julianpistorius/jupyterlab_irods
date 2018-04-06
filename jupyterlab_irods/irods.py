@@ -37,7 +37,7 @@ class Irods:
                 "created":"2018-03-05T17:02:11.246961Z",
                 "content":[],
                 "format": "json",
-                "mimetpye":None,
+                "mimetype":None,
                 "writable":True,
                 "type":"directory"
             }
@@ -50,24 +50,38 @@ class Irods:
                     "created":"2018-03-05T17:02:11.246961Z",
                     "content":None,
                     "format": "json",
-                    "mimetpye":None,
+                    "mimetype":None,
                     "writable":True,
                     "type":"directory"
                 })
             for f in files:
+
+                # obj = session.data_objects.get(current_path+"/"+f.name)
+                # print (obj)
+                # print ("hello i am a dog")
+
+                # file_string = ""
+                # with obj.open('r+') as f:
+                #     f.seek(0,0)
+                #     for line in f:
+                #         file_string = file_string + str(line.decode('ascii'))
+                
+
+                # print ("hello dog?")
+                # print (file_string)
+
                 result['content'].append({
                     "name":f.name,
                     "path":current_path+"/"+f.name,
                     "last_modified": "2018-03-05T17:02:11.246961Z",
                     "created":"2018-03-05T17:02:11.246961Z",
-                    "content": None,
-                    "format": "json",
-                    "mimetpye":"text/x-python",
-                    "writable":True,
+                    "content": "dog food",
+                    "format": "text",
+                    "mimetype":"text/*",
+                    "writable":False,
                     "type":"file"
                 })
           
-
             return result
         except:            
 
@@ -93,8 +107,8 @@ class Irods:
                 "created":"2018-03-05T17:02:11.246961Z",
                 "content": file_string,
                 "format": "text",
-                "mimetpye":"text/*",
-                "writable":True,
+                "mimetype":"text/*",
+                "writable":False,
                 "type":"file"
             }
 

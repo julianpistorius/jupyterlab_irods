@@ -55,12 +55,12 @@ export class IrodsDrive implements Contents.IDrive {
 
     constructor(registry: DocumentRegistry) {
         this._serverSettings = ServerConnection.makeSettings();
-        // this._fileTypeForPath = (path: string) => {
-        //     const types = registry.getFileTypesForPath(path);
-        //     return types.length === 0 ?
-        //         registry.getFileType('text')! :
-        //         types[0];
-        // };
+        this._fileTypeForPath = (path: string) => {
+            const types = registry.getFileTypesForPath(path);
+            return types.length === 0 ?
+                registry.getFileType('text')! :
+                types[0];
+        };
         this.rateLimitedState = new ObservableValue(false);
 
     }
@@ -124,11 +124,11 @@ export class IrodsDrive implements Contents.IDrive {
     }
 
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
-
+        
 
         return this.IrodsRequest<Contents.IModel>(localPath).then(contents => {
             console.log("Trying to do Irods stuff")
-            return contents
+            return contentsToJupyterContents(localPath,contents, this._fileTypeForPath);
         });
 
     }
@@ -178,6 +178,16 @@ export class IrodsDrive implements Contents.IDrive {
 
 
     private _fileChanged = new Signal<this, Contents.IChangedArgs>(this);
+    private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
+
 
 }
+
+export
+function contentsToJupyterContents(path: string, contents: any , fileTypeForPath: (path: string) => DocumentRegistry.IFileType): Contents.IModel {
+    if (contents.content == "directory"){
+        return contents;
+    }
+}
+
 
