@@ -125,47 +125,77 @@ export class IrodsDrive implements Contents.IDrive {
 
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
         
-
-        return this.IrodsRequest<Contents.IModel>(localPath).then(contents => {
+        return this.IrodsRequest<Contents.IModel>(localPath, "GET", null).then(contents => {
             console.log("Trying to do Irods stuff")
             return contentsToJupyterContents(localPath,contents, this._fileTypeForPath);
         });
 
     }
     getDownloadUrl(localPath: string): Promise<string> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.reject('Irods is CURRENTLY read only8');
     }
     newUntitled(options?: Contents.ICreateOptions): Promise<Contents.IModel> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        console.log(options);
+        return null;
+
+        // return this.IrodsRequest<Contents.IModel>(null, 'post', options).then(contents => {
+        //     console.log(contents)
+        //     return contents;
+        // });    
     }
     delete(localPath: string): Promise<void> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return this.IrodsRequest<Contents.IModel>(localPath, 'DELETE', null).then(contents => {
+            console.log(contents)
+            return null;
+        });
     }
     rename(oldLocalPath: string, newLocalPath: string): Promise<Contents.IModel> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return this.IrodsRequest<Contents.IModel>(oldLocalPath, 'PATCH', newLocalPath).then(contents => {
+            console.log(contents)
+            return contents;
+        });
     }
     save(localPath: string, options?: Partial<Contents.IModel>): Promise<Contents.IModel> {
-        return Promise.reject('Irods is CURRENTLY read only');
+
+        console.log(localPath);
+        console.log(options);
+
+        return this.IrodsRequest<Contents.IModel>(localPath, 'PUT', options).then(contents => {
+            console.log(contents)
+            return contents;
+        });
     }
     copy(localPath: string, toLocalDir: string): Promise<Contents.IModel> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.reject('Irods is CURRENTLY read only4');
     }
     createCheckpoint(localPath: string): Promise<Contents.ICheckpointModel> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.reject('Irods is CURRENTLY read only1');
     }
     listCheckpoints(localPath: string): Promise<Contents.ICheckpointModel[]> {
         return Promise.resolve([]);
     }
     restoreCheckpoint(localPath: string, checkpointID: string): Promise<void> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.reject('Irods is CURRENTLY read only2');
     }
     deleteCheckpoint(localPath: string, checkpointID: string): Promise<void> {
-        return Promise.reject('Irods is CURRENTLY read only');
+        return Promise.reject('Irods is CURRENTLY read only3');
     }
 
-    private IrodsRequest<T>(url: string): Promise<T> {
+    private IrodsRequest<T>(url: string, type: string, content: any): Promise<T> {
         const fullURL = URLExt.join(this._serverSettings.baseUrl, 'irods', url);
-        return ServerConnection.makeRequest(fullURL, {}, this._serverSettings).then(response => {
+
+        let init = {};
+
+        if (content != null){
+            init = {
+                method: type,
+                body: JSON.stringify(
+                    content,
+                ),
+            };
+        }
+
+        return ServerConnection.makeRequest(fullURL, init, this._serverSettings).then(response => {
             if (response.status !== 200) {
                 return response.json().then(data => {
                     throw new ServerConnection.ResponseError(response, data.message);
@@ -185,9 +215,7 @@ export class IrodsDrive implements Contents.IDrive {
 
 export
 function contentsToJupyterContents(path: string, contents: any , fileTypeForPath: (path: string) => DocumentRegistry.IFileType): Contents.IModel {
-    if (contents.content == "directory"){
-        return contents;
-    }
+    return contents
 }
 
 

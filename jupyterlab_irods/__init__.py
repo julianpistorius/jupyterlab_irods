@@ -17,6 +17,20 @@ class IrodHandler(APIHandler):
     def get(self, path = ''):
         self.finish(json.dumps(irods.get(path)))
 
+    def put(self, path = ''):
+        self.finish(json.dumps(irods.put(path, self.get_json_body())))
+
+
+    def delete(self, path = ''):
+        self.finish(json.dumps(irods.delete(path)))
+
+    def patch(self, path = ''):
+        self.finish(json.dumps(irods.patch(path, self.get_json_body())))
+
+    def post(self, path = ''):
+        self.finish(json.dumps(irods.post(path)))
+
+
 
 def _jupyter_server_extension_paths():
     """

@@ -6,6 +6,9 @@ Irods Python Module, wraps calls
 import os
 from irods.session import iRODSSession
 
+import re, json
+
+
 
 try:
     env_file = os.environ['IRODS_ENVIRONMENT_FILE']
@@ -19,6 +22,44 @@ class Irods:
     """
     Parent class for helper IROD commands
     """
+
+    def delete (self, current_path):
+        """ deletes file """
+
+        print ("delete:")
+        print (current_path)
+
+    def patch(self, current_path, json_body):
+        """ rename file """
+
+        print ("Patch:")
+        print (current_path)
+        print (json_body)
+
+    def post(self, current_path):
+        """ create file """
+
+        print ("post")
+        print (current_path)
+
+    def put(self, current_path, json_body):
+        """ save file """
+
+        print(current_path)
+        print(json_body)
+
+        data = json_body
+        print(data)
+        print (data['content'])
+
+        obj = session.data_objects.get(current_path)
+
+        with obj.open('w') as f:
+            f.seek(0,0);
+            f.write(data['content'].encode())
+
+        return "done"
+
 
     def get(self, current_path):
         """
@@ -87,12 +128,8 @@ class Irods:
 
             # try:
 
-            print ("testing 123")
-            print (current_path)
             obj = session.data_objects.get(current_path)
-            print (obj)
 
-            print ("failure")
             file_string = ""
             with obj.open('r+') as f:
                 f.seek(0,0)
