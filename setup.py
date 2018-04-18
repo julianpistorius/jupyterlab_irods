@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name='jupyterlab_irods',
-    description='A Jupyter Notebook server extension which acts as a proxy for GitHub API requests.',
+    description='A Jupyter Notebook server extension which acts as a backend for IRODS requests.',
     version='0.5.0',
     packages=setuptools.find_packages(),
     author          = 'Jupyter Development Team',
@@ -24,7 +24,8 @@ setuptools.setup(
         'Programming Language :: Python :: 3',
     ],
     install_requires=[
-        'notebook'
+        'notebook',
+        'python-irodsclient'
     ],
     package_data={'jupyterlab_irods':['*']},
 )
