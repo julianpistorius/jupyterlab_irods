@@ -22,6 +22,8 @@ TODO:
 * Refactor python code a bit
 * Download
 * Copy remote path
+* example script with sessions
+* ?multiple irods connections
 
 
 ## Prerequisites
