@@ -11,24 +11,34 @@ import re, json
 
 irods = Irods()
 
+class SetupHandler(APIHandler):
+    @gen.coroutine
+    def post(self, path = ''):
+        print(" Post here?")
+        body = self.get_json_body()
+        print (body)
+        irods.set_connection(body)
 
 class IrodHandler(APIHandler):
     @gen.coroutine
     def get(self, path = ''):
         self.finish(json.dumps(irods.get(path)))
 
+    @gen.coroutine
     def put(self, path = ''):
         self.finish(json.dumps(irods.put(path, self.get_json_body())))
 
-
+    @gen.coroutine
     def delete(self, path = ''):
         self.finish(json.dumps(irods.delete(path)))
 
+    @gen.coroutine
     def patch(self, path = ''):
         self.finish(json.dumps(irods.patch(path, self.get_json_body())))
 
+    @gen.coroutine
     def post(self, path = ''):
-        self.finish(json.dumps(irods.post(path)))
+        self.finish(json.dumps(irods.post(path, self.get_json_body())))
 
 
 
@@ -56,7 +66,8 @@ def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     base_url = web_app.settings['base_url']
     endpoint = url_path_join(base_url, 'irods')
-    handlers = [(endpoint + "(.*)", IrodHandler)]
+    setup_endpoint = url_path_join(base_url, 'irsetup')
+    handlers = [(endpoint + "(.*)", IrodHandler), (setup_endpoint+"(.*)", SetupHandler)]
     web_app.add_handlers('.*$', handlers)
     # irods = Irods()
     # nbapp.web_app.settings['irods'] = irods

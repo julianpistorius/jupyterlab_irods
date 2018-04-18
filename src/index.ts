@@ -4,6 +4,7 @@ import {
 
 import '../style/index.css';
 
+
 import {
   ILayoutRestorer
 } from '@jupyterlab/application';

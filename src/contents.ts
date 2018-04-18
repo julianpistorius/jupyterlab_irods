@@ -10,6 +10,7 @@ import {
     URLExt
 } from '@jupyterlab/coreutils';
 
+
 import {
     DocumentRegistry
 } from '@jupyterlab/docregistry';
@@ -48,11 +49,6 @@ export class IrodsDrive implements Contents.IDrive {
     // private _serverSettings: ServerConnection.ISettings;
     // private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
 
-
-
-
-
-
     constructor(registry: DocumentRegistry) {
         this._serverSettings = ServerConnection.makeSettings();
         this._fileTypeForPath = (path: string) => {
@@ -62,10 +58,7 @@ export class IrodsDrive implements Contents.IDrive {
                 types[0];
         };
         this.rateLimitedState = new ObservableValue(false);
-
     }
-
-
 
     /**
      * The name of the drive.
@@ -124,44 +117,68 @@ export class IrodsDrive implements Contents.IDrive {
     }
 
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
-        
-        return this.IrodsRequest<Contents.IModel>(localPath, "GET", null).then(contents => {
-            console.log("Trying to do Irods stuff")
-            return contentsToJupyterContents(localPath,contents, this._fileTypeForPath);
-        });
 
+        if (options.type == "file" || options.type == "notebook"){
+            return this.IrodsRequest<Contents.IModel>(localPath, "GET", null, true).then(contents => {
+                return contentsToJupyterContents(localPath, contents, this._fileTypeForPath);
+            });
+        }
+
+        return this.IrodsRequest<Contents.IModel>(localPath, "GET", null).then(contents => {
+            return contentsToJupyterContents(localPath, contents, this._fileTypeForPath);
+        });
     }
     getDownloadUrl(localPath: string): Promise<string> {
         return Promise.reject('Irods is CURRENTLY read only8');
     }
     newUntitled(options?: Contents.ICreateOptions): Promise<Contents.IModel> {
-        console.log(options);
-        return null;
 
-        // return this.IrodsRequest<Contents.IModel>(null, 'post', options).then(contents => {
-        //     console.log(contents)
-        //     return contents;
-        // });    
+        let extension = ''
+        let path = options.path || '';
+        let contentType = options.type || 'notebook';
+
+        if (contentType === 'notebook') {
+            path = path + "/untitled" + (Math.ceil(Date.now() / 1000));
+            extension = ".ipynb"
+            path = path + extension
+        } else if (contentType === 'file') {
+            path = path + "/untitled" + (Math.ceil(Date.now() / 1000));
+        } else if (contentType === 'directory') {
+            path = path + "/newfolder" + (Math.ceil(Date.now() / 1000));
+        }
+
+        return this.IrodsRequest<Contents.IModel>(path, 'POST', contentType, true).then(contents => {
+            let returnable = {
+                path: contents.path,
+                type: contents.type,
+                name: contents.name,
+                writable: contents.writable,
+                created: contents.created,
+                last_modified: contents.last_modified,
+                mimetype: contents.mimetype,
+                content: contents.content,
+                format: contents.format,
+            }
+
+            if (contentType == 'notebook') {
+                returnable.type = 'notebook';
+            }
+            return returnable;
+        });
     }
     delete(localPath: string): Promise<void> {
-        return this.IrodsRequest<Contents.IModel>(localPath, 'DELETE', null).then(contents => {
-            console.log(contents)
+        return this.IrodsRequest<Contents.IModel>(localPath, 'DELETE', localPath, true).then(contents => {
             return null;
         });
     }
     rename(oldLocalPath: string, newLocalPath: string): Promise<Contents.IModel> {
-        return this.IrodsRequest<Contents.IModel>(oldLocalPath, 'PATCH', newLocalPath).then(contents => {
-            console.log(contents)
+        return this.IrodsRequest<Contents.IModel>(oldLocalPath, 'PATCH', newLocalPath, true).then(contents => {
             return contents;
         });
     }
     save(localPath: string, options?: Partial<Contents.IModel>): Promise<Contents.IModel> {
 
-        console.log(localPath);
-        console.log(options);
-
-        return this.IrodsRequest<Contents.IModel>(localPath, 'PUT', options).then(contents => {
-            console.log(contents)
+        return this.IrodsRequest<Contents.IModel>(localPath, 'PUT', options, true).then(contents => {
             return contents;
         });
     }
@@ -181,12 +198,12 @@ export class IrodsDrive implements Contents.IDrive {
         return Promise.reject('Irods is CURRENTLY read only3');
     }
 
-    private IrodsRequest<T>(url: string, type: string, content: any): Promise<T> {
+    private IrodsRequest<T>(url: string, type: string, content: any, loading?: boolean): Promise<T> {
         const fullURL = URLExt.join(this._serverSettings.baseUrl, 'irods', url);
 
         let init = {};
 
-        if (content != null){
+        if (content != null) {
             init = {
                 method: type,
                 body: JSON.stringify(
@@ -194,27 +211,57 @@ export class IrodsDrive implements Contents.IDrive {
                 ),
             };
         }
+        if (loading) {
+            var jpshells = document.getElementsByClassName("jp-ApplicationShell") as HTMLCollectionOf<HTMLElement>;
 
-        return ServerConnection.makeRequest(fullURL, init, this._serverSettings).then(response => {
+            if (jpshells.length > 0) {
+
+                var jpshell = jpshells[0];
+
+                jpshell.style.filter = "grayscale(100%)"
+                jpshell.style.pointerEvents = "none"
+            }
+        }
+
+        var spinners = document.getElementsByClassName("spinner") as HTMLCollectionOf<HTMLElement>;
+        if (spinners.length > 0) {
+            var spinner = spinners[0];
+            spinner.style.display = "block";
+        }
+
+        let my_promise = ServerConnection.makeRequest(fullURL, init, this._serverSettings).then(response => {
             if (response.status !== 200) {
                 return response.json().then(data => {
                     throw new ServerConnection.ResponseError(response, data.message);
                 });
             }
+            if (loading) {
+                var jpshells = document.getElementsByClassName("jp-ApplicationShell") as HTMLCollectionOf<HTMLElement>;
+                if (jpshells.length > 0) {
+                    var jpshell = jpshells[0];
+                    jpshell.style.filter = "grayscale(0%)"
+                    jpshell.style.pointerEvents = "inherit"
+                }
+            }
+
+            var spinners = document.getElementsByClassName("spinner") as HTMLCollectionOf<HTMLElement>;
+            if (spinners.length > 0) {
+                var spinner = spinners[0];
+                spinner.style.display = "none";
+            }
             return response.json();
         });
+        return my_promise;
     }
-
-
 
     private _fileChanged = new Signal<this, Contents.IChangedArgs>(this);
     private _fileTypeForPath: (path: string) => DocumentRegistry.IFileType;
-
-
 }
 
+
+//todo?
 export
-function contentsToJupyterContents(path: string, contents: any , fileTypeForPath: (path: string) => DocumentRegistry.IFileType): Contents.IModel {
+    function contentsToJupyterContents(path: string, contents: any, fileTypeForPath: (path: string) => DocumentRegistry.IFileType): Contents.IModel {
     return contents
 }
 

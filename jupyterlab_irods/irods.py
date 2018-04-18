@@ -9,38 +9,95 @@ from irods.session import iRODSSession
 import re, json
 
 
-
-try:
-    env_file = os.environ['IRODS_ENVIRONMENT_FILE']
-except KeyError:
-    env_file = os.path.expanduser('~/.irods/irods_environment.json') 
-
-session = iRODSSession(irods_env_file=env_file)
-
-
 class Irods:
     """
     Parent class for helper IROD commands
     """
 
+    session = None
+
+    def set_connection(self, json_body):
+        self.session = iRODSSession(host=json_body['host'], port=json_body['port'], user=json_body['user'], password=json_body['password'], zone=json_body['zone'])
+
     def delete (self, current_path):
         """ deletes file """
+        try:
+            obj = self.session.data_objects.get(current_path)
+            obj.unlink(force=True)
+        except:
+            print("there was an error deleting that file")
 
-        print ("delete:")
-        print (current_path)
 
     def patch(self, current_path, json_body):
         """ rename file """
 
-        print ("Patch:")
-        print (current_path)
-        print (json_body)
+        json_body = "/" + json_body
+        
+        try:
+            self.session.data_objects.move(current_path,json_body)
+        except:
+            # maybe its a folder.
+            try:
+               self.session.collections.move(current_path,json_body)
+            except:
+                print("Could not rename, tried folder and file")
 
-    def post(self, current_path):
+
+    def post(self, current_path, json_body):
         """ create file """
 
         print ("post")
         print (current_path)
+        print (json_body)
+
+        if (json_body == "notebook" or json_body == "file"):
+
+            try:
+                obj = self.session.data_objects.create(current_path)
+                my_content = "edit me"
+
+                if (json_body == "notebook"):
+                    my_content = '{ "cells": [ { "cell_type": "code", "execution_count": null, "metadata": { }, "outputs": [], "source": [] } ], "metadata": { "kernelspec": { "display_name": "Python 3", "language": "python", "name": "python3" }, "language_info": { "codemirror_mode": { "name": "ipython", "version": 3 }, "file_extension": ".py", "mimetype": "text/x-python", "name": "python", "nbconvert_exporter": "python", "pygments_lexer": "ipython3", "version": "3.6.4" } }, "nbformat": 4, "nbformat_minor": 2 }'
+
+                with obj.open('w') as f:
+                    f.seek(0,0);
+                    f.write(my_content.encode())
+
+                return {
+
+                    "name": obj.name,
+                    "path": obj.name,
+                    "last_modified": "2018-03-05T17:02:11.246961Z",
+                    "created":"2018-03-05T17:02:11.246961Z",
+                    "content": my_content,
+                    "format": "text",
+                    "mimetype":"text/*",
+                    "writable":False,
+                    "type":"file"
+                }
+
+            except:
+                print("error creating the file ")
+        
+        if (json_body == "directory"):
+            print(current_path)
+            coll = self.session.collections.create(current_path)
+
+            result = {
+
+                "name": coll.name,
+                "path": coll.name,
+                "last_modified": "2018-03-05T17:02:11.246961Z",
+                "created":"2018-03-05T17:02:11.246961Z",
+                "content":[],
+                "format": "json",
+                "mimetype":None,
+                "writable":True,
+                "type":"directory"
+            }
+
+            return result
+
 
     def put(self, current_path, json_body):
         """ save file """
@@ -52,7 +109,10 @@ class Irods:
         print(data)
         print (data['content'])
 
-        obj = session.data_objects.get(current_path)
+        if (type(data['content'] is dict )):
+            data['content'] = json.dumps(data['content'])
+
+        obj = self.session.data_objects.get(current_path)
 
         with obj.open('w') as f:
             f.seek(0,0);
@@ -65,8 +125,23 @@ class Irods:
         """
         Used to get contents of current directory
         """
+
+        if ( self.session == None) :
+            return {
+
+                "name": "folder_name",
+                "path": "folder_path",
+                "last_modified": "2018-03-05T17:02:11.246961Z",
+                "created":"2018-03-05T17:02:11.246961Z",
+                "content": [],
+                "format": "json",
+                "mimetype":None,
+                "writable":False,
+                "type":"directory"
+            }
+
         try:
-            coll = session.collections.get(current_path)
+            coll = self.session.collections.get(current_path)
 
             folders = coll.subcollections
             files = coll.data_objects
@@ -97,20 +172,6 @@ class Irods:
                 })
             for f in files:
 
-                # obj = session.data_objects.get(current_path+"/"+f.name)
-                # print (obj)
-                # print ("hello i am a dog")
-
-                # file_string = ""
-                # with obj.open('r+') as f:
-                #     f.seek(0,0)
-                #     for line in f:
-                #         file_string = file_string + str(line.decode('ascii'))
-                
-
-                # print ("hello dog?")
-                # print (file_string)
-
                 result['content'].append({
                     "name":f.name,
                     "path":current_path+"/"+f.name,
@@ -126,39 +187,48 @@ class Irods:
             return result
         except:            
 
-            # try:
+            try:
 
-            obj = session.data_objects.get(current_path)
+                obj = self.session.data_objects.get(current_path)
 
-            file_string = ""
-            with obj.open('r+') as f:
-                f.seek(0,0)
-                for line in f:
-                    file_string = file_string + str(line.decode('ascii'))
-            
-            return {
+                file_string = ""
+                with obj.open('r+') as f:
+                    f.seek(0,0)
+                    for line in f:
+                        file_string = file_string + str(line.decode('ascii'))
+                
+                return {
 
-                "name": obj.name,
-                "path": obj.name,
-                "last_modified": "2018-03-05T17:02:11.246961Z",
-                "created":"2018-03-05T17:02:11.246961Z",
-                "content": file_string,
-                "format": "text",
-                "mimetype":"text/*",
-                "writable":False,
-                "type":"file"
-            }
+                    "name": obj.name,
+                    "path": obj.name,
+                    "last_modified": "2018-03-05T17:02:11.246961Z",
+                    "created":"2018-03-05T17:02:11.246961Z",
+                    "content": file_string,
+                    "format": "text",
+                    "mimetype":"text/*",
+                    "writable":False,
+                    "type":"file"
+                }
 
-            # except:
-            #     return {
-
-            #         "name": "folder_name",
-            #         "path": "folder_path",
-            #         "last_modified": "2018-03-05T17:02:11.246961Z",
-            #         "created":"2018-03-05T17:02:11.246961Z",
-            #         "content":"",
-            #         "format": "json",
-            #         "mimetpye":None,
-            #         "writable":True,
-            #         "type":"fole"
-            #     }
+            except:
+                return {
+                    "name": "folder_name",
+                    "path": "folder_path",
+                    "last_modified": "2018-03-05T17:02:11.246961Z",
+                    "created":"2018-03-05T17:02:11.246961Z",
+                    "content": [{
+                        "name": "INVALID IRODS CONFIG",
+                        "path": "INVALID IRODS CONFIG",
+                        "last_modified": "2018-03-05T17:02:11.246961Z",
+                        "created":"2018-03-05T17:02:11.246961Z",
+                        "content": [],
+                        "format": "json",
+                        "mimetype":None,
+                        "writable":False,
+                        "type":"directory"
+                    }],
+                    "format": "json",
+                    "mimetype":None,
+                    "writable":False,
+                    "type":"directory"
+                }
