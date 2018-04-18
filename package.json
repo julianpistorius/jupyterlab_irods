@@ -1,5 +1,5 @@
 {
-  "name": "jupyterlab_irods",
+  "name": "@towicode/jupyterlab_irods",
   "version": "0.1.0",
   "description": "IROD bindings for Jupyterlab",
   "keywords": [

@@ -1,7 +1,6 @@
 # jupyterlab_irods
 
-IROD bindings for Jupyterlab
-
+IROD connection filemanager for jupyterlab.
 
 ## Prerequisites
 
@@ -10,10 +9,18 @@ IROD bindings for Jupyterlab
 ## Installation
 
 ```bash
-jupyter labextension install jupyterlab_irods
+jupyter labextension install @towicode/jupyterlab_irods
 ```
 
 ## Development
+
+
+### TODO
+
+* Copy
+* Paste
+* Cut
+* Move
 
 For a development install (requires npm version 4 or later), do the following in the repository directory:
 
