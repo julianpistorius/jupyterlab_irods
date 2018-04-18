@@ -29,8 +29,9 @@ TODO:
 ## Installation
 
 ```bash
-jupyter labextension install @towicode/jupyterlab_irods
 pip install jupyterlab_irods
+jupyter serverextension enable --py jupyterlab_irods
+jupyter labextension install @towicode/jupyterlab_irods
 ```
 
 ## Development
