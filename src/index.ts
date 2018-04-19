@@ -67,13 +67,8 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
   // Add the right click menu modifier
 
   var observer = new MutationObserver(function (mutations) {
-    // For the sake of...observation...let's output the mutation to console to see how this all works
 
     for (let bo of mutations) {
-
-      if (bo.type != "childList") {
-        continue;
-      }
 
       if (bo.addedNodes.length == 0) {
         continue;
@@ -98,6 +93,8 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
         continue;
       }
 
+
+      //  Create the new item, html onhover, onleave and onclick.
       let _newOption = document.createElement('li');
       _newOption.classList.add("p-Menu-item");
       _newOption.setAttribute("data-type", "command");
@@ -150,17 +147,10 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
     }
   });
 
-
-
-  // Notify me of everything!
   var observerConfig = {
-    attributes: true,
     childList: true,
-    characterData: true
   };
 
-  // Node, config
-  // In this case we'll listen to all changes to body and child nodes
   var targetNode = document.body;
   observer.observe(targetNode, observerConfig);
 
