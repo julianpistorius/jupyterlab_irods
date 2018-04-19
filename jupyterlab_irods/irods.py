@@ -191,6 +191,19 @@ class Irods:
 
                 obj = self.session.data_objects.get(current_path)
 
+                if (obj.size > 1048576):
+                    return {
+                        "name": "error",
+                        "path": "error",
+                        "last_modified": "2018-03-05T17:02:11.246961Z",
+                        "created":"2018-03-05T17:02:11.246961Z",
+                        "content": "This file is too large to view in Jupyter Lab\nMax file size 100mb",
+                        "format": "text",
+                        "mimetype":"error",
+                        "writable":False,
+                        "type":"file"
+                    }
+
                 file_string = ""
                 with obj.open('r+') as f:
                     f.seek(0,0)

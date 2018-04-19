@@ -120,6 +120,10 @@ export class IrodsDrive implements Contents.IDrive {
 
         if (options.type == "file" || options.type == "notebook"){
             return this.IrodsRequest<Contents.IModel>(localPath, "GET", null, true).then(contents => {
+                if (contents.mimetype == "error"){
+                    alert("File size too large, JupyterLab Irods only supports 100mb");
+                    return null;
+                }
                 return contentsToJupyterContents(localPath, contents, this._fileTypeForPath);
             });
         }
