@@ -7,6 +7,11 @@ import os
 from irods.session import iRODSSession
 
 import re, json
+import mimetypes
+import base64
+import traceback
+
+
 
 
 class Irods:
@@ -170,14 +175,14 @@ class Irods:
                     "writable":True,
                     "type":"directory"
                 })
-            for f in files:
 
+            for f in files:
                 result['content'].append({
                     "name":f.name,
                     "path":current_path+"/"+f.name,
                     "last_modified": "2018-03-05T17:02:11.246961Z",
                     "created":"2018-03-05T17:02:11.246961Z",
-                    "content": "dog food",
+                    "content": None,
                     "format": "text",
                     "mimetype":"text/*",
                     "writable":False,
@@ -186,9 +191,7 @@ class Irods:
           
             return result
         except:            
-
             try:
-
                 obj = self.session.data_objects.get(current_path)
 
                 if (obj.size > 1048576):
@@ -204,12 +207,28 @@ class Irods:
                         "type":"file"
                     }
 
+                mtype = mimetypes.guess_type(obj.name)
+                ftype = "text"
                 file_string = ""
+
                 with obj.open('r+') as f:
                     f.seek(0,0)
-                    for line in f:
-                        file_string = file_string + str(line.decode('ascii'))
+                    file_string = f.read()
+
+                print (mtype)
+                 
+                mtype = mtype[0]
                 
+                if ("image" in mtype):
+                    print("yes")
+                    file_string = str(base64.b64encode(file_string).decode('ascii'))
+                    ftype = "base64"
+                else:
+                    print("no")
+                    file_string = str(file_string.decode('UTF-8'))
+
+                
+
                 return {
 
                     "name": obj.name,
@@ -217,13 +236,15 @@ class Irods:
                     "last_modified": "2018-03-05T17:02:11.246961Z",
                     "created":"2018-03-05T17:02:11.246961Z",
                     "content": file_string,
-                    "format": "text",
-                    "mimetype":"text/*",
+                    "format": str(ftype),
+                    "mimetype":str(mtype),
                     "writable":False,
                     "type":"file"
                 }
 
-            except:
+            except Exception as e:
+                print (e)
+                print (traceback.format_exc())
                 return {
                     "name": "folder_name",
                     "path": "folder_path",

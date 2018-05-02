@@ -137,6 +137,28 @@ export
     
         }
         this._browser.toolbar.node.appendChild(submit);
+
+
+        let resizeScrollWindow = () => {
+            let height = window.innerHeight - 300;
+            let irodsBrowser = document.getElementById("irods-file-browser");
+            if (irodsBrowser == null) return;
+
+            let contentSelected = irodsBrowser.getElementsByClassName("jp-DirListing-content");
+            if (contentSelected.length == 0) return;
+            let selected = <HTMLElement> contentSelected.item(0);
+
+            selected.style.height = "" + height + "px"
+        }
+
+    
+        this._browser.node.onclick = resizeScrollWindow;
+
+        window.addEventListener('resize', () => {
+            resizeScrollWindow();
+        });
+
+
     }
     readonly host: GitHubEditableName;
     readonly port: GitHubEditableName;
