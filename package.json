@@ -29,14 +29,14 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@jupyterlab/application": "^0.15.0",
-    "@jupyterlab/filebrowser": "^0.15.4",
+    "@jupyterlab/application": "^0.16.3",
+    "@jupyterlab/filebrowser": "^0.16.3",
     "node-cmd": "^3.0.0"
   },
   "devDependencies": {
-    "@types/node": "^9.4.6",
+    "@types/node": "^10.1.0",
     "rimraf": "^2.6.1",
-    "typescript": "~2.6.0"
+    "typescript": "~2.8.3"
   },
   "jupyterlab": {
     "extension": true

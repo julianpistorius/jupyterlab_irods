@@ -4,7 +4,6 @@ import {
 
 import '../style/index.css';
 
-
 import {
   ILayoutRestorer
 } from '@jupyterlab/application';
@@ -12,7 +11,6 @@ import {
 import {
   IDocumentManager
 } from '@jupyterlab/docmanager';
-
 
 import {
   IFileBrowserFactory
@@ -26,6 +24,7 @@ import {
   IrodBrowser
 } from './browser';
 
+import { CopyPath } from './modules/copyPath'
 
 /**
  * Initialization data for the jupyterlab_irods extension.
@@ -40,7 +39,7 @@ const fileBrowserPlugin: JupyterLabPlugin<void> = {
 function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory: IFileBrowserFactory, restorer: ILayoutRestorer): void {
   const { commands } = app;
 
-  console.log("ACtivated@@.001");
+  console.log("Irods Activated  1");
 
   // Add the Google Drive backend to the contents manager.
   const drive = new IrodsDrive(app.docRegistry);
@@ -53,8 +52,8 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
 
   const irodsBrowser = new IrodBrowser(browser, drive);
 
-  irodsBrowser.title.iconClass = 'jp-GithHub-tablogo';
-  irodsBrowser.title.label = "Irods";
+  irodsBrowser.title.iconClass = 'irods-logo';
+  //irodsBrowser.title.label = "Irods";
 
   irodsBrowser.id = 'irods-file-browser';
   // manager.services.contents
@@ -85,7 +84,6 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
         if (no.childElementCount != 1) {
           continue;
         }
-
         foundElement = <HTMLElement>no.childNodes.item(0);
       }
 
@@ -93,66 +91,12 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
         continue;
       }
 
-
-      //  Create the new item, html onhover, onleave and onclick.
-      let _newOption = document.createElement('li');
-      _newOption.classList.add("p-Menu-item");
-      _newOption.setAttribute("data-type", "command");
-      _newOption.innerHTML = '<div class="p-Menu-itemIcon jp-MaterialIcon jp-CopyIcon"></div><div class="p-Menu-itemLabel">Copy Path</div><div class="p-Menu-itemShortcut"></div><div class="p-Menu-itemSubmenuIcon"></div>';
-      _newOption.onmouseover = () => {
-        _newOption.classList.add("p-mod-active");
-      }
-      _newOption.onmouseleave = () => {
-        _newOption.classList.remove("p-mod-active");
-      }
-
-      _newOption.onclick = () => {
-
-        let irodsBrowser = document.getElementById("irods-file-browser");
-        if (irodsBrowser == null) return;
-        //  First we need to get the current name of the item we clicked.
-        let allSelected = irodsBrowser.getElementsByClassName("jp-DirListing-item jp-mod-selected");
-        if (allSelected.length == 0) return;
-        let selected = <HTMLElement> allSelected.item(0);
-        let subSelected = selected.getElementsByClassName("jp-DirListing-itemText");
-        if (subSelected.length == 0) return;
-        let itemName = subSelected.item(0).innerHTML;
-
-        //  Next we need to get the current path.
-
-        let crumbs = irodsBrowser.getElementsByClassName("jp-BreadCrumbs-item");
-        if (crumbs.length == 0) return;
-        let lastCrumb = crumbs.item(crumbs.length-1);
-
-        //  now we copy to the clipboard
-        var dummy = document.createElement("input");
-        document.body.appendChild(dummy);
-        dummy.value="/" + lastCrumb.getAttribute("title") + "/" + itemName;
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-
-
-        //  close menu
-        let menus = document.getElementsByClassName("p-Widget p-Menu");
-        if (menus.length == 0) return;
-        let menu = <HTMLElement> menus.item(0);
-        menu.style.display = "none";
-
-
-      }
-      foundElement.appendChild(_newOption);
-
-      //  close menu
+      let el:HTMLElement = new CopyPath().copyPath;
+      foundElement.appendChild(el);
     }
   });
 
-  var observerConfig = {
-    childList: true,
-  };
-
-  var targetNode = document.body;
-  observer.observe(targetNode, observerConfig);
+  observer.observe(document.body, {childList: true});
 
   return;
 

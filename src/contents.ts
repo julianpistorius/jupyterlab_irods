@@ -15,10 +15,6 @@ import {
     DocumentRegistry
 } from '@jupyterlab/docregistry';
 
-import {
-    ObservableValue
-} from '@jupyterlab/observables';
-
 /**
 * Make a request to the notebook server proxy for the
 * Irods API.
@@ -30,15 +26,6 @@ import {
 *
 * @returns a Promise resolved with the JSON response.
 */
-
-
-
-
-
-
-
-
-
 
 export class IrodsDrive implements Contents.IDrive {
     private _serverSettings: ServerConnection.ISettings;
@@ -57,7 +44,6 @@ export class IrodsDrive implements Contents.IDrive {
                 registry.getFileType('text')! :
                 types[0];
         };
-        this.rateLimitedState = new ObservableValue(false);
     }
 
     /**
@@ -79,10 +65,6 @@ export class IrodsDrive implements Contents.IDrive {
      */
     readonly serverSettings: ServerConnection.ISettings;
 
-    /**
-     * State for whether the drive is being rate limited by GitHub.
-     */
-    readonly rateLimitedState: ObservableValue;
 
     /**
      * A signal emitted when a file operation takes place.
