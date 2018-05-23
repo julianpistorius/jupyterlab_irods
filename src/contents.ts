@@ -100,9 +100,9 @@ export class IrodsDrive implements Contents.IDrive {
 
     get(localPath: string, options?: Contents.IFetchOptions): Promise<Contents.IModel> {
 
-        if (options.type == "file" || options.type == "notebook"){
+        if (options.type == "file" || options.type == "notebook") {
             return this.IrodsRequest<Contents.IModel>(localPath, "GET", null, true).then(contents => {
-                if (contents.mimetype == "error"){
+                if (contents.mimetype == "error") {
                     alert("File size too large, JupyterLab Irods only supports 100mb");
                     return null;
                 }
@@ -114,9 +114,15 @@ export class IrodsDrive implements Contents.IDrive {
             return contentsToJupyterContents(localPath, contents, this._fileTypeForPath);
         });
     }
+
     getDownloadUrl(localPath: string): Promise<string> {
-        return Promise.reject('Irods is CURRENTLY read only8');
+        return new Promise<string>((resolve, reject) => {
+            setTimeout(function () {
+                resolve("/irdownload/" + localPath);
+            }, 1);
+        });
     }
+
     newUntitled(options?: Contents.ICreateOptions): Promise<Contents.IModel> {
 
         let extension = ''
@@ -158,7 +164,11 @@ export class IrodsDrive implements Contents.IDrive {
         });
     }
     rename(oldLocalPath: string, newLocalPath: string): Promise<Contents.IModel> {
-        return this.IrodsRequest<Contents.IModel>(oldLocalPath, 'PATCH', newLocalPath, true).then(contents => {
+        var rename = {
+            mv: true,
+            path: newLocalPath
+        }
+        return this.IrodsRequest<Contents.IModel>(oldLocalPath, 'PATCH', rename, true).then(contents => {
             return contents;
         });
     }
@@ -169,7 +179,30 @@ export class IrodsDrive implements Contents.IDrive {
         });
     }
     copy(localPath: string, toLocalDir: string): Promise<Contents.IModel> {
-        return Promise.reject('Irods is CURRENTLY read only4');
+
+        //  As of 5/23/2018 JupyterLab does not support copying folders
+        //  If this changes this function will have to redone to be a bit smarter.
+
+        var filename = localPath.replace(/^.*[\\\/]/, '')
+        var full_path = toLocalDir + "/" + filename;
+
+        if (full_path == localPath) {
+
+            var name_wo = filename.substring(0, filename.lastIndexOf('.'));
+            var ext = filename.split('.').pop();
+
+            full_path = toLocalDir + "/" + name_wo + (Math.ceil(Date.now() / 1000)) + ext;
+        }
+
+        var copy = {
+            mv: false,
+            path: full_path
+        }
+
+
+        return this.IrodsRequest<Contents.IModel>(localPath, 'PATCH', copy, true).then(contents => {
+            return contents;
+        });
     }
     createCheckpoint(localPath: string): Promise<Contents.ICheckpointModel> {
         return Promise.reject('Irods is CURRENTLY read only1');

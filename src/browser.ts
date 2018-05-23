@@ -15,6 +15,9 @@ import { ConnectButton } from './modules/connectButton'
 export
     class IrodBrowser extends Widget {
 
+    public createMenu: Boolean;
+
+
     constructor(browser: FileBrowser, drive: IrodsDrive) {
         super();
         this.addClass('jp-IrodBrowser');
@@ -28,6 +31,14 @@ export
         });
         this._browser.toolbar.addItem('irodSpinner', this._irodsSpinner);
         this._browser.toolbar.addClass("display_block");
+        this.createMenu = false;
+
+        // Add right click event so we can tell index.ts to add the copy-path command
+        this._browser.node.onmousedown = (ev: MouseEvent) => {
+            if (ev.which == 3){
+                this.createMenu = true;
+            }
+        }
 
         let myStorage = window.localStorage
 
@@ -82,7 +93,7 @@ export
         this.password._nameNode.setAttribute('style', value);
 
 
-        let submit = new ConnectButton(this.host, this.zone, this.port, this.password, this.user).submit;
+        let submit = new ConnectButton(this.host, this.zone, this.port, this.password, this.user, this._browser).submit;
         this._browser.toolbar.node.appendChild(submit);
 
 
@@ -101,6 +112,11 @@ export
             resizeScrollWindow();
         });
     }
+
+    cdHome(): any {
+        this._browser.model.cd('/iplant/home/' + this.user._nameNode.textContent);
+    }
+
     readonly host: EditableField;
     readonly port: EditableField;
     readonly user: EditableField;

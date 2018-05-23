@@ -6,6 +6,10 @@ import {
    URLExt
 } from '@jupyterlab/coreutils';
 
+import {
+    FileBrowser
+} from '@jupyterlab/filebrowser';
+
 import EditableField from './editableField';
 
 export 
@@ -17,7 +21,8 @@ class ConnectButton {
                 private zone: EditableField,
                 private port: EditableField,
                 private password: EditableField,
-                private user: EditableField){
+                private user: EditableField,
+                _browser: FileBrowser){
         this.submit = document.createElement('button'); 
         let submit = this.submit;
 
@@ -43,6 +48,9 @@ class ConnectButton {
                 }
     
                 var spinners = document.getElementsByClassName("spinner") as HTMLCollectionOf<HTMLElement>;
+                _browser.model.cd("/iplant/home/" + this.user._nameNode.textContent);
+                _browser.model.refresh();
+                
                 if (spinners.length > 0) {
                     var spinner = spinners[0];
                     spinner.style.display = "none";

@@ -36,14 +36,17 @@ const fileBrowserPlugin: JupyterLabPlugin<void> = {
   activate: activateFileBrowser
 };
 
-function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory: IFileBrowserFactory, restorer: ILayoutRestorer): void {
+function activateFileBrowser(app: JupyterLab,
+  manager: IDocumentManager,
+  factory: IFileBrowserFactory,
+  restorer: ILayoutRestorer): void {
   const { commands } = app;
 
   console.log("Irods Activated  1");
 
-  // Add the Google Drive backend to the contents manager.
   const drive = new IrodsDrive(app.docRegistry);
   manager.services.contents.addDrive(drive);
+
 
   const browser = factory.createFileBrowser("irod-fb", {
     commands,
@@ -52,20 +55,36 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
 
   const irodsBrowser = new IrodBrowser(browser, drive);
 
+
   irodsBrowser.title.iconClass = 'irods-logo';
-  //irodsBrowser.title.label = "Irods";
 
   irodsBrowser.id = 'irods-file-browser';
-  // manager.services.contents
 
   // Add the file browser widget to the application restorer.
   restorer.add(irodsBrowser, "irod-fb");
   app.shell.addToLeftArea(irodsBrowser, { rank: 102 });
 
 
+
+  Promise.all([app.restored])
+    .then(([settings]) => {
+      browser.model.restored.then(() => {
+        irodsBrowser.cdHome();
+      });
+    }).catch((reason: Error) => {
+      console.error(reason.message);
+    });
+
+
+
   // Add the right click menu modifier
 
   var observer = new MutationObserver(function (mutations) {
+
+    if (!irodsBrowser.createMenu){
+      
+      return;
+    }
 
     for (let bo of mutations) {
 
@@ -91,12 +110,13 @@ function activateFileBrowser(app: JupyterLab, manager: IDocumentManager, factory
         continue;
       }
 
-      let el:HTMLElement = new CopyPath().copyPath;
+      let el: HTMLElement = new CopyPath().copyPath;
       foundElement.appendChild(el);
+      irodsBrowser.createMenu = false;
     }
   });
 
-  observer.observe(document.body, {childList: true});
+  observer.observe(document.body, { childList: true });
 
   return;
 
