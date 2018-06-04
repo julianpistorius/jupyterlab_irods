@@ -11,17 +11,19 @@ Currently supports the following features:
 * navigate through IRODS collection
 * save files
 * add new folder
-
-TODO:
-
 * Copy
 * Paste
 * Cut
 * Move
-* Delete folder
-* Refactor python code a bit
 * Download
 * Copy remote path
+
+
+TODO:
+
+
+* Delete folder
+* Refactor python code a bit
 * example script with sessions
 * ?multiple irods connections
 
