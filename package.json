@@ -7,9 +7,9 @@
     "jupyterlab",
     "jupyterlab-extension"
   ],
-  "homepage": "https://github.com/my_name/jupyterlab_myextension",
+  "homepage": "https://github.com/towicode/jupyterlab_irods",
   "bugs": {
-    "url": "https://github.com/my_name/jupyterlab_myextension/issues"
+    "url": "https://github.com/towicode/jupyterlab_irods/issues"
   },
   "license": "BSD-3-Clause",
   "author": "Todd Wickizer",
@@ -21,7 +21,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/my_name/jupyterlab_myextension.git"
+    "url": "https://github.com/towicode/jupyterlab_irods.git"
   },
   "scripts": {
     "build": "tsc",
