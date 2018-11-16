@@ -1,5 +1,7 @@
 # jupyterlab_irods
 
+WARNING: This is not the latest version of the iRODS plugin. For the latest code: https://github.com/towicode/IJab
+
 IROD connection filemanager for jupyterlab. Contains both a backend server using python-irods and a frontend for managing content.
 
 Currently supports the following features:
